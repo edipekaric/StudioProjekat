@@ -9,6 +9,9 @@ const LandingStudent = () => {
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [message, setMessage] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentTutorID, setCurrentTutorID] = useState(null);
+  const [connectionMessage, setConnectionMessage] = useState("");
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -55,6 +58,40 @@ const LandingStudent = () => {
     } catch (err) {
       setMessage(err.message);
       setSearchResults([]);
+    }
+  };
+
+  const handleRequestConnection = (tutorID) => {
+    setCurrentTutorID(tutorID);
+    setShowPopup(true);
+  };
+
+  const handleSendRequest = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+
+      const response = await fetch("http://localhost:5000/api/request-connection", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          tutorID: currentTutorID,
+          message: connectionMessage,
+        }),
+      });
+
+      if (!response.ok) {
+        const { error } = await response.json();
+        throw new Error(error || "Failed to send connection request.");
+      }
+
+      const data = await response.json();
+      alert(data.message || "Connection request sent successfully!");
+      setShowPopup(false);
+    } catch (err) {
+      alert(err.message || "An error occurred while sending the connection request.");
     }
   };
 
@@ -120,17 +157,51 @@ const LandingStudent = () => {
         {searchResults.length === 0 && !message && <p>No results found.</p>}
         {searchResults.map((tutor) => (
           <div key={tutor.tutorID} style={styles.resultCard}>
-            <h4>{`${tutor.firstName} ${tutor.lastName}`}</h4>
-            <p>Hourly Rate: ${tutor.hourlyRate}</p>
-            <p>Subjects: {tutor.subjects}</p>
+            <div>
+              <h4>{`${tutor.firstName} ${tutor.lastName}`}</h4>
+              <p>Hourly Rate: ${tutor.hourlyRate}</p>
+              <p>Subjects: {tutor.subjects}</p>
+            </div>
+            <button
+              style={styles.requestButton}
+              onClick={() => handleRequestConnection(tutor.tutorID)}
+            >
+              Request Connection
+            </button>
           </div>
         ))}
       </div>
 
-      {/* Logout Button */}
-      <button style={styles.logoutButton} onClick={handleLogout}>
-        Log out
-      </button>
+      {/* Popup */}
+      {showPopup && (
+        <div style={styles.popup}>
+          <div style={styles.popupContent}>
+            <h3>Send a message to the tutor</h3>
+            <textarea
+              value={connectionMessage}
+              onChange={(e) => setConnectionMessage(e.target.value)}
+              style={styles.textarea}
+              placeholder="Write your message here..."
+            />
+            <button onClick={handleSendRequest} style={styles.sendButton}>
+              Send
+            </button>
+            <button style={styles.closeButton} onClick={() => setShowPopup(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Logout and Requests Buttons */}
+      <div style={styles.buttonContainer}>
+        <button style={styles.requestsButton} onClick={() => navigate("/student-requests")}>
+          Requests
+        </button>
+        <button style={styles.logoutButton} onClick={handleLogout}>
+          Log out
+        </button>
+      </div>
     </div>
   );
 };
@@ -213,12 +284,79 @@ const styles = {
     padding: "15px",
     borderRadius: "5px",
     marginBottom: "10px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
     width: "98%",
   },
-  logoutButton: {
+  requestButton: {
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    padding: "10px",
+    cursor: "pointer",
+  },
+  popup: {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  popupContent: {
+    backgroundColor: "#fff",
+    padding: "20px",
+    borderRadius: "10px",
+    width: "400px",
+    textAlign: "center",
+  },
+  textarea: {
+    width: "95%",
+    height: "100px",
+    padding: "10px",
+    margin: "10px 0",
+    borderRadius: "5px",
+    border: "1px solid #ddd",
+  },
+  sendButton: {
+    backgroundColor: "#4caf50",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    cursor: "pointer",
+    marginRight: "10px",
+  },
+  closeButton: {
+    backgroundColor: "#ff4d4d",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  buttonContainer: {
     position: "absolute",
     top: "10px",
     right: "10px",
+    display: "flex",
+    gap: "10px",
+  },
+  requestsButton: {
+    padding: "10px 20px",
+    fontSize: "1rem",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+  },
+  logoutButton: {
     padding: "10px 20px",
     fontSize: "1rem",
     backgroundColor: "#ff4d4d",
@@ -226,9 +364,6 @@ const styles = {
     border: "none",
     borderRadius: "5px",
     cursor: "pointer",
-  },
-  message: {
-    color: "#ffcc00",
   },
 };
 

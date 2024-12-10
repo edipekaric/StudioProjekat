@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
   const [firstName, setFirstName] = useState("");
@@ -9,14 +9,15 @@ const Register = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("Student"); // Added state for role
+  const [role, setRole] = useState("Student");
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate(); // Used to navigate to other parts of the site
 
   const handleRegister = async (e) => {
+    // Function for registration
     e.preventDefault();
 
     // Ensure passwords match
@@ -39,9 +40,10 @@ const Register = () => {
       phoneNum: phoneNumber,
       passvord: password,
       birthDate: dateOfBirth,
-      role, // Pass Student or Tutor
+      role, //Student or Tutor
     };
 
+    // Uses fetch API to send POST request
     try {
       const response = await fetch("http://localhost:5000/api/register", {
         method: "POST",
@@ -55,7 +57,7 @@ const Register = () => {
       }
 
       alert("Registration successful");
-      navigate("/"); // Redirect to the login page
+      navigate("/"); //Redirect to the login page
     } catch (err) {
       setError(err.message);
     }
@@ -117,7 +119,7 @@ const Register = () => {
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
-          style={styles.input} // Reusing the input style for consistency
+          style={styles.input2}
         >
           <option value="Student">Student</option>
           <option value="Tutor">Tutor</option>
@@ -175,6 +177,15 @@ const styles = {
   },
   input: {
     width: "100%",
+    padding: "10px",
+    marginBottom: "15px",
+    fontSize: "1rem",
+    borderRadius: "5px",
+    border: "1px solid #ddd",
+    outline: "none",
+  },
+  input2: {
+    width: "108%",
     padding: "10px",
     marginBottom: "15px",
     fontSize: "1rem",

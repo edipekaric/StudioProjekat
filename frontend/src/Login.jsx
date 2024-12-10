@@ -14,7 +14,7 @@ const Login = () => {
 
     const credentials = {
       email,
-      passvord: password, // Use "passvord" as per your database schema
+      passvord: password,
       role,
     };
 
@@ -119,7 +119,7 @@ const styles = {
     outline: "none",
   },
   select: {
-    width: "100%",
+    width: "108%",
     padding: "10px",
     marginBottom: "15px",
     fontSize: "1rem",

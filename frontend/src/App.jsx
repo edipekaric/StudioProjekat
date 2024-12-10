@@ -5,6 +5,7 @@ import LandingTutor from "./LandingTutor";
 import TutorProfile from "./TutorProfile";
 import LandingStudent from "./LandingStudent";
 import Register from "./Register";
+import StudentRequests from "./StudentRequests";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/landing-tutor" element={<LandingTutor />} />
         <Route path="/tutor-profile" element={<TutorProfile />} />
         <Route path="/landing-student" element={<LandingStudent />} />
+        <Route path="/student-requests" element={<StudentRequests />} />
       </Routes>
     </Router>
   );
