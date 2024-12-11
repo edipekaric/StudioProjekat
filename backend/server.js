@@ -198,8 +198,6 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-
-
 // Endpoint to handle connection requests
 app.post('/api/request-connection', verifyToken, (req, res) => {
     const studentID = req.user.id; // Student ID from the token
@@ -244,104 +242,84 @@ app.get("/api/tutor-requests", verifyToken, (req, res) => {
       res.status(200).json({ requests: results });
     });
   });
-  
+
   // Endpoint to update the status of a connection request
-  app.post("/api/update-request-status", verifyToken, (req, res) => {
-    const { connectionRequestID, status } = req.body;
-  
-    if (!connectionRequestID || !status) {
-      return res.status(400).json({ error: "Request ID and status are required." });
+app.post("/api/update-request-status", verifyToken, (req, res) => {
+  const { connectionRequestID, status } = req.body;
+
+  if (!connectionRequestID || !status) {
+    return res.status(400).json({ error: "Request ID and status are required." });
+  }
+
+  const query = `
+    UPDATE connectionrequest
+    SET status = ?
+    WHERE connectionRequestID = ?
+  `;
+
+  db.query(query, [status, connectionRequestID], (err) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Failed to update request status." });
     }
-  
-    const query = `
-      UPDATE connectionrequest
-      SET status = ?
-      WHERE connectionRequestID = ?
-    `;
-  
-    db.query(query, [status, connectionRequestID], (err) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Failed to update request status." });
-      }
-      res.status(200).json({ message: `Request status updated to ${status}.` });
-    });
+    res.status(200).json({ message: `Request status updated to ${status}.` });
   });
-  
+});
 
+app.post("/api/update-request-status", verifyToken, (req, res) => {
+  const { connectionRequestID, status } = req.body;
 
+  if (!connectionRequestID || !status) {
+    return res.status(400).json({ error: "ConnectionRequestID and status are required." });
+  }
 
-  app.post("/api/update-request-status", verifyToken, (req, res) => {
-    const { connectionRequestID, status } = req.body;
-  
-    if (!connectionRequestID || !status) {
-      return res.status(400).json({ error: "ConnectionRequestID and status are required." });
+  const query = `
+    UPDATE connectionrequest
+    SET status = ?
+    WHERE connectionRequestID = ?
+  `;
+
+  db.query(query, [status, connectionRequestID], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Failed to update request status." });
     }
-  
-    const query = `
-      UPDATE connectionrequest
-      SET status = ?
-      WHERE connectionRequestID = ?
-    `;
-  
-    db.query(query, [status, connectionRequestID], (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Failed to update request status." });
-      }
-  
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ error: "Connection request not found." });
-      }
-  
-      res.status(200).json({ message: `Request ${status.toLowerCase()} successfully!` });
-    });
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ error: "Connection request not found." });
+    }
+
+    res.status(200).json({ message: `Request ${status.toLowerCase()} successfully!` });
   });
-  
+});
 
+// Valja
+// Endpoint to fetch connection requests for a student
+app.get("/api/student-requests", verifyToken, (req, res) => {
+  const studentID = req.user.id; // Student ID from the token
 
+  const query = `
+    SELECT 
+      cr.connectionRequestID, 
+      cr.message, 
+      cr.status, 
+      t.tutorID, 
+      CONCAT(t.firstName, ' ', t.lastName) AS tutorName
+    FROM connectionrequest cr
+    JOIN tutor t ON cr.tutorID = t.tutorID
+    WHERE cr.studentID = ?
+  `;
 
-
-
-
-//Valja
-  // Endpoint to fetch connection requests for a student
-  app.get("/api/student-requests", verifyToken, (req, res) => {
-    const studentID = req.user.id; // Student ID from the token
-  
-    const query = `
-      SELECT 
-        cr.connectionRequestID, 
-        cr.message, 
-        cr.status, 
-        t.tutorID, 
-        CONCAT(t.firstName, ' ', t.lastName) AS tutorName
-      FROM connectionrequest cr
-      JOIN tutor t ON cr.tutorID = t.tutorID
-      WHERE cr.studentID = ?
-    `;
-  
-    db.query(query, [studentID], (err, results) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res.status(500).json({ error: "Failed to fetch connection requests." });
-      }
-      res.status(200).json({ requests: results });
-    });
+  db.query(query, [studentID], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Failed to fetch connection requests." });
+    }
+    res.status(200).json({ requests: results });
   });
-  
-  
-  
+});
 
-
-
-
-
-
-
-
-
-  // Fetch tutor profile
+// Fetch tutor profile
 app.get("/api/tutor-profile", verifyToken, (req, res) => {
   const tutorID = req.user.id; // Tutor ID from the token
 
@@ -371,16 +349,11 @@ app.get("/api/tutor-profile", verifyToken, (req, res) => {
       res.status(200).json({
         hourlyRate: tutorResults[0]?.hourlyRate || "",
         subjects: subjectResults,
-        selectedSubjectIDs: [], // Add logic here to fetch the tutor's selected subjects
+        selectedSubjectIDs: [],
       });
     });
   });
 });
-
-
-
-
-
 
 app.post("/api/update-tutor-profile", verifyToken, (req, res) => {
   const tutorID = req.user.id; // Tutor ID from the token
@@ -439,13 +412,6 @@ app.post("/api/update-tutor-profile", verifyToken, (req, res) => {
   });
 });
 
-
-
-
-
-
-
-
 app.post("/api/make-payment", verifyToken, (req, res) => {
   const studentID = req.user.id; // Extracted from the JWT token
   const { tutorID, amount, message } = req.body;
@@ -488,12 +454,6 @@ app.post("/api/make-payment", verifyToken, (req, res) => {
     });
   });
 });
-
-
-
-
-
-
 
 app.post("/api/check-payment", verifyToken, (req, res) => {
   const studentID = req.user.id; // Extracted from JWT
