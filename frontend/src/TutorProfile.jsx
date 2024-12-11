@@ -75,9 +75,13 @@ const TutorProfile = () => {
   return (
     <div style={styles.container}>
       {/* LOGO acting as a home button */}
-      <div style={styles.logo} onClick={() => navigate("/landing-tutor")}>
-        LOGO
-      </div>
+      <img
+        src="a.jpg"
+        alt="Logo"
+        style={styles.logo}
+        onClick={() => navigate("/landing-tutor")}
+      />
+
 
       {/* Main content */}
       <div style={styles.profileContainer}>
@@ -146,10 +150,10 @@ const styles = {
   },
   logo: {
     position: "absolute",
-    top: "10px",
-    left: "10px",
-    fontSize: "1.5rem",
-    color: "#fff",
+    top: "7px",
+    left: "7px",
+    width: "100px", // Width of the image
+    height: "20px", // Height of the image
     cursor: "pointer",
   },
   profileContainer: {

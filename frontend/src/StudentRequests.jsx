@@ -137,9 +137,13 @@ const StudentRequests = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.logo} onClick={() => navigate("/landing-student")}>
-        LOGO
-      </div>
+      <img
+        src="a.jpg"
+        alt="Logo"
+        style={styles.logo}
+        onClick={() => navigate("/landing-student")}
+      />
+
 
       <div style={styles.requestsContainer}>
         <h2>Your Connection Requests</h2>
@@ -249,10 +253,10 @@ const styles = {
   },
   logo: {
     position: "absolute",
-    top: "10px",
-    left: "10px",
-    fontSize: "1.5rem",
-    color: "#fff",
+    top: "7px",
+    left: "7px",
+    width: "100px", // Width of the image
+    height: "20px", // Height of the image
     cursor: "pointer",
   },
   requestsContainer: {
